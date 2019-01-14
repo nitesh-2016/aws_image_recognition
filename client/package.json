@@ -1,0 +1,12 @@
+{
+  "name": "aws_image_rekognition_ui",
+  "version": "1.0.0",
+  "description": "UI for aws_image_rekognition application.",
+  "author": "Nitesh Sharma",
+  "license": "ISC",
+  "dependencies": {
+    "angular": "^1.7.5",
+    "bootstrap": "^3.4.0",
+    "jquery": "^3.3.1"
+  }
+}

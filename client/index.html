@@ -1,0 +1,32 @@
+<html>
+<head>
+    <title>Aws Image Recognition</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+
+    <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="node_modules/angular/angular.min.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+</head>
+<div ng-app="imageRecognition" class="container" ng-controller="MyCtrl" align="center">
+    <h1>*** Aws Image Recognition ***</h1>
+    <div class="input-group" align="center">
+        <label class="btn btn-default">
+            Browse Image <input type="file" file-handler fileinput="myFile" filepreview="filepreview" hidden>
+        </label>&nbsp;&nbsp;
+        <button class="btn-primary" ng-click="uploadFile()">Upload</button>
+    </div>
+    <div class="col-md-6">
+        <h3 align="center">Base Image:</h3>
+        <img width="400" height="400" ng-show="filepreview" ng-src="{{filepreview}}" class="img-responsive"/>
+    </div>
+    <div class="col-md-6">
+        <h3 align="center">Matched Image:</h3>
+        <img width="400" height="400" ng-src="img/Loading_icon.gif" ng-show="showLoadingIcon"/>
+        <img ng-show="isFileMatched" width="400" height="400"
+             ng-src="data:image/JPEG;base64,{{matchedFileSrc}}" class="img-responsive"/>
+        <p ng-show="showUnMatchMessage">{{unMatchMessage}}</p>
+    </div>
+</div>
+</html>
