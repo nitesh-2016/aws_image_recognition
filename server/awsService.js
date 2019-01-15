@@ -9,6 +9,24 @@ var rekognition = new AWS.Rekognition({region: config.region});
 var s3 = new AWS.S3();
 
 /**
+ * Function to upload an uploaded image in s3 bucket.
+ * @param imgBuffer - Image as buffer.
+ * @param faceId - Unique id of the rekognition face.
+ * @param next - returns acknowledgement(success/error)
+ */
+function uploadFaceInS3Bucket(imgBuffer, faceId, next) {
+  var readStream = new stream.Readable;
+  readStream.push(imgBuffer);
+  readStream.push(null);
+  const params = {
+    Bucket: config.s3Bucket,
+    Key: faceId,
+    Body: readStream
+  };
+  s3.upload(params, next);
+}
+
+/**
  * Function to register(index) a new image in aws S3 bucket.
  * @param file - Image file object.
  * @param next - returns error or success response.
@@ -29,15 +47,7 @@ function registerFace(file, next) {
       // Insert new face in s3 bucket.
       let indexedFaceData = data.FaceRecords[0];
       let faceId = indexedFaceData.Face.FaceId;
-      var readStream = new stream.Readable;
-      readStream.push(imgBuffer);
-      readStream.push(null);
-      const params = {
-        Bucket: config.s3Bucket,
-        Key: faceId,
-        Body: readStream
-      };
-      s3.upload(params, next);
+      uploadFaceInS3Bucket(imgBuffer, faceId, next);
     }
   });
 }
@@ -45,14 +55,28 @@ function registerFace(file, next) {
 /**
  * Function to get image from S3 bucket using imageId.
  * @param faceId - unique id of the stored face.
+ * @param file - Image file object.
  * @param next - returns error or success response.
  */
-function getMatchedFaceFromS3Bucket(faceId, next) {
+function getMatchedFaceFromS3Bucket(faceId, file, next) {
   s3.getObject({
     "Bucket": config.s3Bucket,
     "Key": faceId
   }, (err, data) => {
-    next(err, {matchedFace: data.Body.toString('base64')});
+    if (err) {
+      next(err, null);
+    } else if (data && data.Body) {
+      next(null, {matchedFace: data.Body.toString('base64')});
+    } else {
+      uploadFaceInS3Bucket(file.buffer, faceId, (err, data) => {
+        if (!err) {
+          console.log("S3 upload successful - ", data); // successful response
+        } else {
+          console.error("S3 upload error - ", err); // successful response
+        }
+        next(null, "No match found. Registered face for future searches !!!");
+      });
+    }
   });
 }
 
@@ -75,7 +99,7 @@ exports.matchFaces = function (file, next) {
     } else {
       if (data.FaceMatches && data.FaceMatches.length > 0 && data.FaceMatches[0].Face) {
         let faceId = data.FaceMatches[0].Face.FaceId;
-        getMatchedFaceFromS3Bucket(faceId, next);
+        getMatchedFaceFromS3Bucket(faceId, file, next);
       } else {
         registerFace(file, (err, data) => {
           if (!err) {
