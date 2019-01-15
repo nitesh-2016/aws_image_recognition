@@ -62,10 +62,8 @@ function getMatchedFaceFromS3Bucket(faceId, file, next) {
   s3.getObject({
     "Bucket": config.s3Bucket,
     "Key": faceId
-  }, (err, data) => {
-    if (err) {
-      next(err, null);
-    } else if (data && data.Body) {
+  }, (error, response) => {
+    if (response && response.Body) {
       next(null, {matchedFace: data.Body.toString('base64')});
     } else {
       uploadFaceInS3Bucket(file.buffer, faceId, (err, data) => {
