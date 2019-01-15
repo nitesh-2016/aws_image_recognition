@@ -64,7 +64,7 @@ function getMatchedFaceFromS3Bucket(faceId, file, next) {
     "Key": faceId
   }, (error, response) => {
     if (response && response.Body) {
-      next(null, {matchedFace: data.Body.toString('base64')});
+      next(null, {matchedFace: response.Body.toString('base64')});
     } else {
       uploadFaceInS3Bucket(file.buffer, faceId, (err, data) => {
         if (!err) {
